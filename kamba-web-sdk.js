@@ -139,6 +139,7 @@ ready(function() {
 
                                 //Modal Container
                                 var kambaModalContainer = document.getElementsByTagName("body")[0].appendChild(mainKambaModalContainer);
+
                                 kambaModalContainer = kambaComponentCreator(kambaModalContainer, 'classList', 'add', { 'kambaModalContainer': 'kambaModalContainer' });
                                 kambaModalContainer = kambaComponentCreator('.kambaModalContainer', 'style', 'setProperty', {
                                     width: '100%',
@@ -457,11 +458,9 @@ ready(function() {
 
                 function templateModalErrorPayKamba() {
 
-                    mainKambaModalContainer = kambaObjectCreator('main');
+                    var mainKambaModalContainer = kambaObjectCreator('main');
                     //Modal Container
-
                     var kambaModalContainer = document.getElementsByTagName("body")[0].appendChild(mainKambaModalContainer);
-                    kambaModalContainer.classList.add("kambaModalContainer");
 
                     var kambaModalContainer = kambaComponentCreator(kambaModalContainer, 'style', 'setProperty', {
                         width: '100%',
