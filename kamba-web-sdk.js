@@ -1,5 +1,4 @@
-function ready (fn)
-{
+function ready(fn) {
     if (document.readyState != 'loading') {
         fn();
     } else {
@@ -7,45 +6,86 @@ function ready (fn)
     }
 }
 
-ready(function(){
+let setComponentAttributes = (e, p, f, a) => {
+    var cl = (typeof e === 'object') ? e : document.querySelector(e);
+    if (cl !== undefined && p in cl) {
+        if (f in cl[p]) {
+            for (var prs in a) {
+                cl[p][f](prs, a[prs]);
+            }
+        }
+    }
+    return cl;
+};
+
+let getComponents = (e, evt, callback) => {
+    let el = (typeof e === 'object') ? e : document.querySelector(e);
+    if (el !== undefined || el !== null) {
+        if (evt !== undefined || evt !== null) {
+            el.addEventListener(evt, callback);
+        }
+    }
+    return el;
+};
+
+let kambaComponentCreator = (e, p, f, a, callback) => {
+    let t;
+    if (Array.isArray(e)) {
+        t = e.forEach((obj) => {
+            setComponentAttributes(obj, p, f, a);
+        });
+    } else {
+        t = setComponentAttributes(e, p, f, a);
+    }
+    if (typeof callback === 'function') {
+        callback(t);
+    }
+    return t;
+};
+
+let kambaObjectCreator = (object, callback) => {
+    let el = document.createElement(object);
+    if (typeof callback === 'function') {
+        return callback(el);
+    }
+    return el;
+};
+
+ready(function() {
 
     //Style for button Pay with Kamba - Merchant
     var btnOpenWidgetKamba = document.querySelector(".btnOpenWidgetKamba");
     btnOpenWidgetKamba.innerHTML = "Pagar com a Kamba";
     var imgButtonKamba = document.createElement("img");
-    imgButtonKamba.src="https://image.ibb.co/mFZUTz/Pay_Logo_kamba.png";
-    imgButtonKamba.classList.add("classImgButtonKamba");         
+    imgButtonKamba.src = "https://image.ibb.co/mFZUTz/Pay_Logo_kamba.png";
+    imgButtonKamba.classList.add("classImgButtonKamba");
     btnOpenWidgetKamba.appendChild(imgButtonKamba);
-    
-    var classImgButtonKamba = document.querySelector(".classImgButtonKamba");
-    classImgButtonKamba.style.width = '25%';
-    classImgButtonKamba.style.marginLeft = '0.5rem';
-      
-    btnOpenWidgetKamba.style.backgroundImage = 'linear-gradient(to left, #00FFB3, #00ff5f)';
-    btnOpenWidgetKamba.style.border = 'none';
-    btnOpenWidgetKamba.style.padding = '0.5rem';
-    btnOpenWidgetKamba.style.cursor = 'pointer';
-    btnOpenWidgetKamba.style.fontSize = '1rem';
-    btnOpenWidgetKamba.style.borderRadius = '0.3rem';
-    btnOpenWidgetKamba.style.fontFamily = "'Montserrat', sans-serif";
-    btnOpenWidgetKamba.style.display = 'flex';
-    btnOpenWidgetKamba.style.justifyContent = 'center';
-    btnOpenWidgetKamba.style.alignItems = 'center';
-    btnOpenWidgetKamba.style.boxSizing = 'border-box';
 
+
+    kambaComponentCreator('.classImgButtonKamba', 'style', 'setProperty', { 'width': '25%', 'margin-left': '0.5rem' });
+    kambaComponentCreator('.btnOpenWidgetKamba', 'style', 'setProperty', {
+        'background-image': 'linear-gradient(to left, #00FFB3, #00ff5f)',
+        'border': 'none',
+        'padding': '0.5rem',
+        'cursor': 'pointer',
+        'font-size': '1rem',
+        'border-radius': '0.3rem',
+        'font-family': 'Montserrat,"sans-serif"',
+        'display': 'flex',
+        'justify-content': 'center',
+        'box-sizing': 'border-box'
+    });
 });
 
-
-
-(function () {
-(function bootstrap() {
+(function() {
+    (function bootstrap() {
         'use strict'
 
         window.KAMBA = window.KAMBA || {};
 
         window.kamba = function kamba(initial_config, secondary_config) {
 
-            function ready (fn){
+            function ready(fn) {
                 if (document.readyState != 'loading') {
                     fn();
                 } else {
@@ -53,24 +93,25 @@ ready(function(){
                 }
             }
 
-            ready(function(){
+            ready(function() {
                 //Send - Post request
 
                 let url;
                 let token = 'Token ';
 
-                if (secondary_config.environment == 'sandbox'){
+                if (secondary_config.environment == 'sandbox') {
                     url = "https://sandbox.usekamba.com/v1/checkouts/";
-                }else{
+                } else {
                     url = "https://api.usekamba.com/v1/checkouts/";
                 }
 
-                fetch(url, {method: 'POST',
-                    headers: {
-                                'Content-Type': 'application/json',
-                                'authorization': token.concat(secondary_config.api_key)
-                            }, 
-                    body:  JSON.stringify({
+                fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'authorization': token.concat(secondary_config.api_key)
+                        },
+                        body: JSON.stringify({
                             channel: initial_config.channel,
                             currency: initial_config.currency,
                             initial_amount: initial_config.initial_amount,
@@ -79,103 +120,81 @@ ready(function(){
                             payment_method: initial_config.payment_method
                         })
 
-                }).then(function(response) {
-                  if(response.ok) {
+                    }).then(function(response) {
+                        if (response.ok) {
 
-                    response.json().then(data => {
+                            response.json().then(data => {
 
-                    var initial_amount = new Number(data.initial_amount);
-                    var total_amount = new Number(data.total_amount);
+                                var initial_amount = new Number(data.initial_amount);
+                                var total_amount = new Number(data.total_amount);
 
-                    var dateConvert = new Date(data.created_at);
-                    var newDateConvert = [dateConvert.getDate(), dateConvert.getMonth(), dateConvert.getFullYear()].join('/')+' às '+[dateConvert.getHours(), dateConvert.getMinutes(), dateConvert.getSeconds()].join(':');
+                                var dateConvert = new Date(data.created_at);
+                                var newDateConvert = [dateConvert.getDate(), dateConvert.getMonth(), dateConvert.getFullYear()].join('/') + ' às ' + [dateConvert.getHours(), dateConvert.getMinutes(), dateConvert.getSeconds()].join(':');
 
-                    var convertQrCode = data.qr_code.html;
+                                var convertQrCode = data.qr_code.html;
 
-                    console.log(convertQrCode);
+                                console.log(convertQrCode);
 
-                    var mainKambaModalContainer = document.createElement("main");
-                   
-                    //Modal Container
-                    var kambaModalContainer = document.getElementsByTagName("body")[0].appendChild(mainKambaModalContainer);
-                    kambaModalContainer.classList.add("kambaModalContainer");
-                    kambaModalContainer.style.width = '100vw';
-                    kambaModalContainer.style.height = '100%';
-                    kambaModalContainer.style.background = 'rgba(0,0,0,.25)';
-                    kambaModalContainer.style.position = 'fixed';
-                    kambaModalContainer.style.top = '0';
-                    kambaModalContainer.style.left = '0';
-                    kambaModalContainer.style.zIndex = '1000000000000000000000';
-                    kambaModalContainer.style.display = 'flex';
-                    kambaModalContainer.style.justifyContent = 'center';
-                    kambaModalContainer.style.alignItems = 'center';
-                    kambaModalContainer.style.boxSizing = 'border-box';
-                    kambaModalContainer.style.paddingRight = '1rem';
-                    kambaModalContainer.style.overflow = 'auto';
+                                var mainKambaModalContainer = document.createElement("main");
 
+                                //Modal Container
+                                var kambaModalContainer = document.getElementsByTagName("body")[0].appendChild(mainKambaModalContainer);
+                                kambaModalContainer = kambaComponentCreator(kambaModalContainer, 'classList', 'add', { 'kambaModalContainer': 'kambaModalContainer' });
+                                kambaModalContainer = kambaComponentCreator('.kambaModalContainer', 'style', 'setProperty', {
+                                    width: '100%',
+                                    height: '100%',
+                                    'background-color': 'rgba(0,0,0,.25)',
+                                    position: 'fixed',
+                                    top: 0,
+                                    left: 0,
+                                    'z-index': '1000000000000000000000',
+                                    'display': 'flex',
+                                    'justify-content': 'center',
+                                    'align-items': 'center',
+                                    'box-sizing': 'border-box',
+                                    'padding-right': '1rem',
+                                    'overflow': 'auto'
+                                });
 
-                    //Template
-                    const kambaWidget = `
-
+                                //Template
+                                const kambaWidget = `
                     <div class="kambaModalWidget">
-
                         <header class="checkoutHeader">
 
                             <div class="securityPay">
                                 <div class="textSecurityPay"><img src="https://image.ibb.co/bxv8MK/icons8_lock_kamba.png" class="lock"> <span class="ps"> Pagamento seguro</span></div>
                             </div>
                         </header>
-                     
                         <section>
-
                             <article class="headerWidget">
-                                
                                 <div class="qrPart">
-
                                     <div class="detailQr">
-                                        
                                         <div class="divSvg">
-                                        
                                             <svg viewBox="0 0 625 625" preserveAspectRatio="xMidYMid meet" class="imgQr">
                                                     ${data.qr_code.svg}
                                             </svg>
-
                                              <div class="textValidate">
                                                 Válido até ${newDateConvert}
                                             </div>
                                         </div>
-
                                     </div>
-                             
-                                
                                 </div>
-
-                                
                                 <div class="partDetailPay">
-                
                                     <div class="payDetail">
-
                                         <ul class="listProprietyProduct">
                                             <li class="nameProduct"><b> ${data.notes} </b></li>
                                             <li class="priceProduct"><b>${initial_amount.toLocaleString('pt-ao', {style: 'currency', currency: initial_config.currency})} </b></li>
                                         </ul>
-
                                         <ul class="listTotal">
                                             <li class="descriptionTotal"><b>TOTAL</b></li>
                                             <li class="priceTotal"><b>${total_amount.toLocaleString('pt-ao', {style: 'currency', currency: initial_config.currency})} </b></li>
                                         </ul>
                                     </div>
-
                                 </div>
-                                 
-                                          
                             </article>
                             <article>
-
                                 <div  class="descriptionKamba">
-
                                     <div class="helpKamba">
-
                                         <div class="optionHelpKamba1">
                                             - Abra o App em seu telefone e escaneie o código
                                         </div>
@@ -184,297 +203,338 @@ ready(function(){
                                         </div>
                                         <div class="optionHelpKamba3">- Não tem uma conta Kamba? <a href="#" class="appLinkKamba"> Baixe o App</a>
                                         </div>
-
                                     </div>
-                                    
                                 </div>
-             
                             </article>
                             <footer class="footerKamba">
                                 <div class="descritionKambaMerchant">Pagar <b> ${data.merchant.business_name} </b>
                                 </div>
-                                    
                                 <div class="btnCloseWidgetKamba">
                                     Fechar
-                                </div> 
+                                </div>
                             </footer>
-
                         </section>
                     </div>`
-                    kambaModalContainer.innerHTML = kambaWidget;
+                                kambaModalContainer.innerHTML = kambaWidget;
 
-                    //Style Widget Modal
-                    var kambaModalWidget = document.querySelector("main .kambaModalWidget");
-                    kambaModalWidget.style.borderRadius = '0.2rem';
-                    kambaModalWidget.style.overflow = 'auto';
-                    kambaModalWidget.style.background = '#fff';
-                    kambaModalWidget.style.width = '100%';
-                    kambaModalWidget.style.height = '100%';
-                    kambaModalWidget.style.position = 'absolute';
-                    kambaModalWidget.style.fontFamily = "'Montserrat', sans-serif";
-                    kambaModalWidget.style.fontSize = '0.85rem';
-                    kambaModalWidget.style.boxShadow = '0 5px 8px 0 rgba(0,0,0,.2), 0 7px 20px 0 rgba(0,0,0,.10)';
+                                //Style Widget Modal
 
-                    //Header
-                    var checkoutHeader = document.querySelector(".checkoutHeader");
-                    checkoutHeader.style.padding = '1rem 0 0 1rem';
-                
-                    //Body
-                    var headerWidget = document.querySelector(".headerWidget");
-                    headerWidget.style.width = '100%';
-                    headerWidget.style.float = 'left';
-                    headerWidget.style.marginTop = '1rem';
-                    headerWidget.style.background = 'white';
+                                kambaComponentCreator('main .kambaModalWidget', 'style', 'setProperty', {
+                                    'border-radius': '0.2rem',
+                                    'overflow': 'auto',
+                                    'background': '#fff',
+                                    'width': '100%',
+                                    'position': 'absolute',
+                                    'font-family': 'Montserrat, "sans-serif"',
+                                    'font-size': '0.85rem',
+                                    'box-shadow': '0 5px 8px 0 rgba(0,0,0,.2), 0 7px 20px 0 rgba(0,0,0,.10)'
+                                });
+
+                                //Header
+
+                                kambaComponentCreator('.checkoutHeader', 'style', 'setProperty', { 'padding': '1rem 0 0 1rem' });
+
+                                //Body
+
+                                kambaComponentCreator('.headerWidget', 'style', 'setProperty', {
+                                    'width': '100%',
+                                    'float': 'left',
+                                    'margin-top': '1rem',
+                                    'background-color': '#fff'
+                                });
+
+                                kambaComponentCreator('.securityPay', 'style', 'setProperty', {
+                                    'margin-right': '1rem',
+                                    'float': 'left'
+                                });
+
+                                kambaComponentCreator('.textSecurityPay', 'style', 'setProperty', {
+                                    'text-decoration': 'none',
+                                    'display': 'flex',
+                                    'justify-content': 'center',
+                                    'box-sizing': 'border-box'
+                                });
+
+                                kambaComponentCreator('.ps', 'style', 'setProperty', {
+                                    'margin-left': '0.2rem',
+                                    'color': '#666666',
+                                    'font-size': '0.8rem'
+                                });
+
+                                kambaComponentCreator('.qrPart', 'style', 'setProperty', {
+                                    'width': '100%',
+                                    'background-color': '#00ff5f',
+                                    'position': 'relative'
+                                });
+
+                                kambaComponentCreator('.detailQr', 'style', 'setProperty', {
+                                    'width': '90%',
+                                    'float': 'left',
+                                    'background-color': '#fff',
+                                    'text-alight': 'center',
+                                    'box-sizing': 'border-box'
+                                });
+
+                                kambaComponentCreator('.divSvg', 'style', 'setProperty', {
+                                    'text-align': 'center',
+                                    'padding': '0 1rem 1rem 1rem',
+                                    'width': '100%'
+                                });
+
+                                kambaComponentCreator('.imgQr', 'style', 'setProperty', {
+                                    'width': '50%',
+                                    'height': '50%',
+                                    'text-align': 'center',
+                                    'box-shadow': '0px 0px 5px #7f7f7f',
+                                    'border-radius': '0.3rem',
+                                    'padding': '0.5rem',
+                                });
+
+                                kambaComponentCreator('.textValidate', 'style', 'setProperty', {
+                                    'text-align': 'center',
+                                    'font-size': '0.72rem',
+                                    'margin-top': '1rem',
+                                    'float': 'left',
+                                    'width': '100%'
+                                });
 
 
-                    var securityPay = document.querySelector(".securityPay");
-                    securityPay.style.marginRight = '1rem';
-                    securityPay.style.float = 'right';
+                                //Pay Detail
+                                kambaComponentCreator('.partDetailPay', 'style', 'setProperty', {
+                                    'width': '100%',
+                                    'float': 'left',
+                                    'background-color': '#fff'
+                                });
 
-                    var textSecurityPay = document.querySelector(".textSecurityPay");
-                    textSecurityPay.style.textDecoration = 'none';
-                    textSecurityPay.style.display = 'flex';
-                    textSecurityPay.style.justifyContent = 'center';
-                    textSecurityPay.style.alignItems = 'center';
-                    textSecurityPay.style.boxSizing = 'border-box';
+                                kambaComponentCreator('.payDetail', 'style', 'setProperty', {
+                                    'width': '92%',
+                                    'float': 'left',
+                                    'margin': '1rem 1rem 0 1rem'
+                                });
 
-                    var ps = document.querySelector(".ps");
-                    ps.style.marginLeft = '0.2rem';
-                    ps.style.color = '#666666';
-                    ps.fontSize = '0.8rem';
+                                kambaComponentCreator('.listProprietyProduct', 'style', 'setProperty', {
+                                    'width': '100%',
+                                    'list-style': 'none',
+                                    'float': 'left',
+                                    'margin-left': 0,
+                                    'padding-left': 0,
+                                    'background-color': '#fff'
+                                });
 
-                    var qrPart = document.querySelector(".qrPart");
-                    qrPart.style.width = '100%';
-                    qrPart.style.background = "#00ff5f";
-                    qrPart.style.position = 'relative';
+                                kambaComponentCreator('.nameProduct', 'style', 'setProperty', {
+                                    'float': 'left'
+                                });
 
-                    var detailQr = document.querySelector(".detailQr");
-                    detailQr.style.width = '90%';
-                    detailQr.style.float = 'left';
-                    detailQr.style.background = 'white';
-                    detailQr.style.boxSizing = 'border-box';
-                    detailQr.style.textAlign = 'center';
-        
-                    var divSvg = document.querySelector(".divSvg");
-                    divSvg.style.textAlign = 'center';
-                    divSvg.style.padding = '0 1rem 1rem 1rem';
-                    divSvg.style.width = '100%';
+                                kambaComponentCreator('.priceProdut', 'style', 'setProperty', {
+                                    'float': 'right'
+                                });
 
-                    var imgQr = document.querySelector(".imgQr");
-                    imgQr.style.width = '50%';
-                    imgQr.style.height = '50%';
-                    imgQr.style.textAlign = 'center';
-                    imgQr.style.boxShadow = '0px 0px 5px #7f7f7f';
-                    imgQr.style.padding = '0.5rem';
-                    imgQr.style.borderRadius = '0.3rem';
+                                kambaComponentCreator('.listTotal', 'style', 'setProperty', {
+                                    'width': '100%',
+                                    'list-style': 'none',
+                                    'float': 'left',
+                                    'margin-left': 0,
+                                    'padding-left': 0,
+                                    'background-color': '#fff',
+                                    'border-bottom': '1px solid #d2cfcf'
+                                });
 
-                    var textValidate = document.querySelector(".textValidate");
-                    textValidate.style.textAlign = 'center';
-                    textValidate.style.fontSize = '0.72rem';
-                    textValidate.style.marginTop = '1rem';
-                    textValidate.style.float = 'left';
-                    textValidate.style.width = '100%';
 
-                    //Pay Detail
-                    var partDetailPay = document.querySelector(".partDetailPay");
-                    partDetailPay.style.width = '100%';
-                    partDetailPay.style.float = 'left';
-                    partDetailPay.style.background = 'white';
+                                kambaComponentCreator('.descriptionTotal', 'style', 'setProperty', {
+                                    'float': 'left'
+                                });
 
-                    var payDetail = document.querySelector(".payDetail");
-                    payDetail.style.width = '92%';
-                    payDetail.style.float = 'left';
-                    payDetail.style.margin = '1rem 1rem 0 1rem';
+                                kambaComponentCreator('.priceTotal', 'style', 'setProperty', {
+                                    'float': 'right'
+                                });
 
-                    var listProprietyProduct = document.querySelector(".listProprietyProduct");
-                    listProprietyProduct.style.width = '100%';
-                    listProprietyProduct.style.listStyle = 'none';
-                    listProprietyProduct.style.float = 'left';
-                    listProprietyProduct.style.marginLeft = '0';
-                    listProprietyProduct.style.paddingLeft = '0';
-                    listProprietyProduct.style.background = 'white';
+                                kambaComponentCreator('.descriptionKamba', 'style', 'setProperty', {
+                                    'width': '90%',
+                                    'padding': '0 1rem',
+                                    'text-align': 'center'
+                                });
 
-                    var nameProduct = document.querySelector(".nameProduct");
-                    nameProduct.style.float = 'left';
+                                kambaComponentCreator('.helpKamba', 'style', 'setProperty', {
+                                    'text-alight': 'center'
+                                });
 
-                    var priceProduct = document.querySelector(".priceProduct");
-                    priceProduct.style.float = 'right';
 
-                    var listTotal = document.querySelector(".listTotal");
-                    listTotal.style.width = '100%';
-                    listTotal.style.listStyle = 'none';
-                    listTotal.style.float = 'left';
-                    listTotal.style.marginLeft = '0';
-                    listTotal.style.paddingLeft = '0';
-                    listTotal.style.background = 'white';
-                    listTotal.style.borderBottom = '1px solid #D2CFCF';
-                    listTotal.style.paddingBottom = '0.1rem';
+                                kambaComponentCreator('.optionHelpKamba1', 'style', 'setProperty', {
+                                    'margin-top': '0.5rem'
+                                });
 
-                    var descriptionTotal = document.querySelector(".descriptionTotal");
-                    descriptionTotal.style.float = 'left';
+                                kambaComponentCreator(['.optionHelpKamba2', '.optionHelpKamba3'], 'style', 'setProperty', {
+                                    'margin-top': '0.8rem'
+                                });
 
-                    var priceTotal = document.querySelector(".priceTotal");
-                    priceTotal.style.float = 'right';
+                                kambaComponentCreator('.appLinkKamba', 'style', 'setProperty', {
+                                    'text-decoration': 'none',
+                                    'color': '#0099ff'
+                                });
 
-                    var descriptionKamba = document.querySelector(".descriptionKamba");
-                    descriptionKamba.style.width = '90%';
-                    descriptionKamba.style.padding = '0 1rem';
-                    descriptionKamba.style.textAlign = 'center';
+                                kambaComponentCreator('.footerKamba', 'style', 'setProperty', {
+                                    'width': '90%',
+                                    'float': 'left',
+                                    'padding': '0 1rem'
+                                });
+                                kambaComponentCreator('.descritionKambaMerchant', 'style', 'setProperty', {
+                                    'margin': '1.7rem',
+                                    'float': 'left'
+                                });
+                                kambaComponentCreator('.btnCloseWidgetKamba', 'style', 'setProperty', {
+                                    'title': 'Sair do Pagamento',
+                                    'border': 'none',
+                                    'cursor': 'pointer',
+                                    'font-size': '1rem',
+                                    'border-radius': '0.3rem',
+                                    'float': 'right',
+                                    'color': 'red',
+                                    'padding-top': '1.5rem'
+                                }).onclick = function() {
+                                    setComponentAttributes('main .kambaModalWidget', 'style', 'setProperty', {
+                                        'display': 'none'
+                                    });
+                                };
 
-                    var helpKamba = document.querySelector(".helpKamba");
-                    helpKamba.style.textAlign = 'center';
+                                //Button for Pay Kamba
+                                getComponents('.btnOpenWidgetKamba', 'click', () => {
+                                    setComponentAttributes(kambaModalContainer, 'style', 'setProperty', {
+                                        'display': 'flex'
+                                    });
+                                });
 
-                    var optionHelpKamba1 = document.querySelector(".optionHelpKamba1");
-                    optionHelpKamba1.style.marginTop = '0.5rem';
+                                //Function Midia Query
 
-                    var optionHelpKamba2 = document.querySelector(".optionHelpKamba2");
-                    optionHelpKamba2.style.marginTop = '0.8rem';
+                                //MEDIUM and LARGE
+                                function midiaMediumDivice(x) {
+                                    if (x.matches) {
+                                        setComponentAttributes(kambaModalWidget, 'style', 'setProperty', {
+                                            'width': '340px',
+                                            'height': '490px'
+                                        });
+                                        setComponentAttributes(partDetailPay, 'style', 'setProperty', {
+                                            'width': '100%',
+                                            'float': 'left'
+                                        });
 
-                    var optionHelpKamba3 = document.querySelector(".optionHelpKamba3");
-                    optionHelpKamba3.style.marginTop = '0.8rem';
+                                        setComponentAttributes(descritionKambaMerchant, 'style', 'setProperty', {
+                                            'float': 'left'
+                                        });
+                                        setComponentAttributes(descriptionKamba, 'style', 'setProperty', {
+                                            'width': '91%'
+                                        });
+                                    }
+                                }
 
-                    var appLinkKamba = document.querySelector(".appLinkKamba");
-                    appLinkKamba.style.textDecoration = 'none';
-                    appLinkKamba.style.color = '#0099ff';
+                                var x = window.matchMedia("(min-width: 641px)")
+                                midiaMediumDivice(x)
+                                x.addListener(midiaMediumDivice)
 
-                    var footerKamba = document.querySelector(".footerKamba");
-                    footerKamba.style.width = '90%';
-                    footerKamba.style.float = 'left';
-                    footerKamba.style.padding = '0 1rem';
+                            });
 
-                    var descritionKambaMerchant = document.querySelector(".descritionKambaMerchant");
-                    descritionKambaMerchant.style.marginTop = '1.7rem';
-                    descritionKambaMerchant.style.float = 'left';
+                        } else {
 
-                    var btnCloseWidgetKamba = document.querySelector(".btnCloseWidgetKamba");
-                    btnCloseWidgetKamba.title = 'Sair do pagamento';
-                    btnCloseWidgetKamba.style.border = 'none';
-                    btnCloseWidgetKamba.style.cursor = 'pointer';
-                    btnCloseWidgetKamba.style.fontSize = '1rem';
-                    btnCloseWidgetKamba.style.borderRadius = '0.3rem';
-                    btnCloseWidgetKamba.style.float = 'right';
-                    btnCloseWidgetKamba.style.color = 'red';
-                    btnCloseWidgetKamba.style.paddingTop = '1.5rem';
+                            response.json().then(data => {
 
-                    btnCloseWidgetKamba.onclick = function(){
-                        kambaModalContainer.style.display = 'none';
-                    };
+                                templateModalErrorPayKamba();
 
-                    //Button for Pay Kamba
-                    document.querySelector(".btnOpenWidgetKamba").onclick = function(){
-                        kambaModalContainer.style.display = 'flex';
-                    };
+                                var textErrorKamba = document.querySelector(".textErrorKamba");
+                                textErrorKamba.innerHTML = "Falha!... Verifique suas configurações de pagamento ou entra em contacto com a equipe da Kamba";
 
-                    //Function Midia Query
+                            });
 
-                    //MEDIUM and LARGE
-                    function midiaMediumDivice(x) {
-                        if (x.matches) { 
-                             kambaModalWidget.style.width = '360px';
-                             kambaModalWidget.style.height = '490px';
-                             partDetailPay.style.width = '100%';
-                             partDetailPay.style.float = 'left';
-                             descritionKambaMerchant.style.float = 'left';
-                             descriptionKamba.style.width = '91%';
                         }
-                    }
+                    })
+                    .catch(function(error) {
 
-                    var x = window.matchMedia("(min-width: 641px)")
-                    midiaMediumDivice(x)
-                    x.addListener(midiaMediumDivice)
+                        templateModalErrorPayKamba();
 
+                        var textErrorKamba = document.querySelector(".textErrorKamba");
+                        textErrorKamba.innerHTML = "Falha!... Verifique sua conexão com a internet, ela pode estar muito lenta";
                     });
 
-                  } else {
-
-                    response.json().then(data => {
-
-                      templateModalErrorPayKamba();
-
-                      var textErrorKamba = document.querySelector(".textErrorKamba");
-                      textErrorKamba.innerHTML = "Falha!... Verifique suas configurações de pagamento ou entra em contacto com a equipe da Kamba";
-                      
-                    });
-
-                  }
-                })
-                .catch(function(error) {
-        
-                  templateModalErrorPayKamba();
-
-                  var textErrorKamba = document.querySelector(".textErrorKamba");
-                  textErrorKamba.innerHTML = "Falha!... Verifique sua conexão com a internet, ela pode estar muito lenta";
-                });
-               
 
 
-               function templateModalErrorPayKamba(){
-                   var mainKambaModalContainer = document.createElement("main");
-                   
+                function templateModalErrorPayKamba() {
+
+                    mainKambaModalContainer = kambaObjectCreator('main');
                     //Modal Container
+
                     var kambaModalContainer = document.getElementsByTagName("body")[0].appendChild(mainKambaModalContainer);
                     kambaModalContainer.classList.add("kambaModalContainer");
-                    kambaModalContainer.style.width = '100vw';
-                    kambaModalContainer.style.height = '100%';
-                    kambaModalContainer.style.background = 'rgba(0,0,0,.4)';
-                    kambaModalContainer.style.position = 'fixed';
-                    kambaModalContainer.style.top = '0';
-                    kambaModalContainer.style.left = '0';
-                    kambaModalContainer.style.zIndex = '1000000000000000000000';
-                    kambaModalContainer.style.display = 'flex';
-                    kambaModalContainer.style.justifyContent = 'center';
-                    kambaModalContainer.style.alignItems = 'center';
-                    kambaModalContainer.style.boxSizing = 'border-box';
-                    kambaModalContainer.style.paddingRight = '1rem';
-                    kambaModalContainer.style.overflow = 'auto';
-                    kambaModalContainer.style.cursor = 'pointer';
 
-                    kambaModalContainer.addEventListener('click', function(){
-                    kambaModalContainer.style.display = 'none';
+                    var kambaModalContainer = kambaComponentCreator(kambaModalContainer, 'style', 'setProperty', {
+                        width: '100%',
+                        height: '100%',
+                        'background-color': 'rgba(0,0,0,.4)',
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        'z-index': '1000000000000000000000',
+                        'display': 'flex',
+                        'justify-content': 'center',
+                        'align-items': 'center',
+                        'box-sizing': 'border-box',
+                        'padding-right': '1rem',
+                        'overflow': 'auto'
+                    }, (e) => {
+                        setComponentAttributes(e, 'classList', 'add', {
+                            'kambaModalContainer': 'kambaModalContainer'
+                        });
+                    });
+
+                    //to fixe
+                    kambaModalContainer = getComponents(kambaModalContainer, 'click', () => {
+                        setComponentAttributes(kambaModalContainer, 'style', 'setProperty', {
+                            'display': 'none'
+                        });
                     });
 
                     //Button for Pay Kamba
-                    document.querySelector(".btnOpenWidgetKamba").onclick = function(){
-                        kambaModalContainer.style.display = 'flex';
-                    };
-
+                    getComponents('.btnOpenWidgetKamba', 'click', (e) => {
+                        setComponentAttributes(e, 'style', 'setProperty', {
+                            'display': 'flex'
+                        });
+                    });
                     //Template
                     const kambaWidget = `
 
                     <div class="kambaModalWidget">
-                        <section> 
+                        <section>
                                 <p class="textErrorKamba"></p>
                         </section>
                     </div>`
+
                     kambaModalContainer.innerHTML = kambaWidget;
-
                     //Style Widget Modal
-                    var kambaModalWidget = document.querySelector("main .kambaModalWidget");
-                    kambaModalWidget.style.borderRadius = '0.2rem';
-                    kambaModalWidget.style.overflow = 'auto';
-                    kambaModalWidget.style.background = '#fff';
-                    kambaModalWidget.style.width = '65%';
-                    kambaModalWidget.style.height = '35%';
-                    kambaModalWidget.style.position = 'absolute';
-                    kambaModalWidget.style.fontFamily = "'Montserrat', sans-serif";
-                    kambaModalWidget.style.fontSize = '0.95rem';
-                    kambaModalWidget.style.boxShadow = '0 5px 8px 0 rgba(0,0,0,.2), 0 7px 20px 0 rgba(0,0,0,.10)';
-                    kambaModalWidget.style.display = 'flex';
-                    kambaModalWidget.style.justifyContent = 'center';
-                    kambaModalWidget.style.alignItems = 'center';
-                    kambaModalWidget.style.boxSizing = 'border-box';
-                    kambaModalWidget.style.textAlign = 'center';
-                    kambaModalWidget.style.padding = '1.5rem';
-                    kambaModalWidget.style.color = 'red';
 
+                    var kambaModalWidget = kambaComponentCreator('main .kambaModalWidget', 'style', 'setProperty', {
+                        'border-radius': '0.2rem',
+                        'overflow': 'auto',
+                        'background-color': '#fff',
+                        'width': '65%',
+                        'height': '35%',
+                        'position': 'absolute',
+                        'font-family': '"Montserrat",sans-serif',
+                        'font-size': '0.95rem',
+                        'box-shadow': '0 5px 8px 0 rgba(0,0,0,.2), 0 7px 20px 0 rgba(0,0,0,.10)',
+                        'display': 'flex',
+                        'justify-content': 'center',
+                        'align-items': 'center',
+                        'box-sizing': 'border-box',
+                        'text-align': 'center',
+                        'padding': '1.5rem',
+                        'color': 'red'
+                    });
 
 
                     //MEDIUM
                     function midiaMediumDivice(x) {
-                        if (x.matches) { 
-                             kambaModalWidget.style.width = '40%';
-                             kambaModalWidget.style.height = '30%';
-                            
+                        if (x.matches) {
+                            setComponentAttributes(kambaModalWidget, 'style', 'setProperty', {
+                                'width': '40%',
+                                'height': '50%'
+                            });
                         }
                     }
 
@@ -484,20 +544,20 @@ ready(function(){
 
                     //LARGE
                     function midiaLargeDivice(x) {
-                        if (x.matches) {   
-                            kambaModalWidget.style.width = '25%';
-                            kambaModalWidget.style.height = '30%';
-                
-                        } 
+                        if (x.matches) {
+                            setComponentAttributes(kambaWidget, 'style', 'setProperty', {
+                                'width': '25%',
+                                'height': '30%'
+                            });
+                        }
                     }
 
                     var x = window.matchMedia("(min-width: 1025PX)")
-                    midiaLargeDivice(x)
-                    x.addListener(midiaLargeDivice)
-                
-               }             
+                    midiaLargeDivice(x);
+                    x.addListener(midiaLargeDivice);
+                }
 
-            })  
+            })
         }
     })();
 })();
