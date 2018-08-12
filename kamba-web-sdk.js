@@ -417,11 +417,13 @@ ready(function() {
                                     'float': 'right',
                                     'color': 'red',
                                     'padding-top': '1.5rem'
-                                }).onclick = function() {
-                                    setComponentAttributes('main .kambaModalWidget', 'style', 'setProperty', {
-                                        'display': 'none'
+                                }, (t) => {
+                                    getComponents(t, 'click', () => {
+                                        setComponentAttributes('main .kambaModalWidget', 'style', 'setProperty', {
+                                            'display': 'none'
+                                        });
                                     });
-                                };
+                                });
 
                                 //Button for Pay Kamba
                                 getComponents('.btnOpenWidgetKamba', 'click', () => {
