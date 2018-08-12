@@ -6,14 +6,32 @@ function ready(fn) {
     }
 }
 
-let setComponentAttributes = (e, p, f, a) => {
+let setComponentAttributes = (e, p, f, a, callback) => {
+
     var cl = (typeof e === 'object') ? e : document.querySelector(e);
-    if (cl !== undefined && p in cl) {
-        if (f in cl[p]) {
+    if (cl !== undefined && (p !== undefined || p !== null) && p in cl) {
+        if (typeof cl[p] === 'function') {
             for (var prs in a) {
-                cl[p][f](prs, a[prs]);
+                if (typeof a[prs] === 'object') {
+                    cl[p](a[prs]);
+                } else {
+                    cl[p](prs, a[prs]);
+                }
+            }
+        } else {
+            if (f in cl[p] && typeof cl[p][f] === 'function') {
+                for (var prs in a) {
+                    cl[p][f](prs, a[prs]);
+                }
             }
         }
+    } else if (p === undefined || p === null) {
+        for (var prs in a) {
+            cl[prs] = a[prs];
+        }
+    }
+    if (typeof callback === 'function') {
+        callback(cl);
     }
     return cl;
 };
@@ -43,6 +61,7 @@ let kambaComponentCreator = (e, p, f, a, callback) => {
     return t;
 };
 
+
 let kambaObjectCreator = (object, callback) => {
     let el = document.createElement(object);
     if (typeof callback === 'function') {
@@ -52,17 +71,22 @@ let kambaObjectCreator = (object, callback) => {
 };
 
 ready(function() {
+    kambaObjectCreator('img', (img) => {
+        setComponentAttributes(img, 'setAttribute', undefined, {
+            'src': 'https://image.ibb.co/mFZUTz/Pay_Logo_kamba.png',
+            'class': 'classImgButtonKamba'
+        }, (img) => {
+            setComponentAttributes('.btnOpenWidgetKamba', undefined, undefined, {
+                'innerHTML': 'Pagar com o Kamba'
+            }, (btnOpenWidgetKamba) => {
+                setComponentAttributes(btnOpenWidgetKamba, 'appendChild', undefined, {
+                    0: img
+                });
+            });
+        });
+    });
 
-    //Style for button Pay with Kamba - Merchant
-    var btnOpenWidgetKamba = document.querySelector(".btnOpenWidgetKamba");
-    btnOpenWidgetKamba.innerHTML = "Pagar com a Kamba";
-    var imgButtonKamba = document.createElement("img");
-    imgButtonKamba.src = "https://image.ibb.co/mFZUTz/Pay_Logo_kamba.png";
-    imgButtonKamba.classList.add("classImgButtonKamba");
-    btnOpenWidgetKamba.appendChild(imgButtonKamba);
 
-
-    kambaComponentCreator('.classImgButtonKamba', 'style', 'setProperty', { 'width': '25%', 'margin-left': '0.5rem' });
     kambaComponentCreator('.btnOpenWidgetKamba', 'style', 'setProperty', {
         'background-image': 'linear-gradient(to left, #00FFB3, #00ff5f)',
         'border': 'none',
@@ -75,6 +99,8 @@ ready(function() {
         'justify-content': 'center',
         'box-sizing': 'border-box'
     });
+
+    kambaComponentCreator('.classImgButtonKamba', 'style', 'setProperty', { 'width': '25%', 'margin-left': '0.5rem' });
 });
 
 (function() {
