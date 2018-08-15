@@ -109,42 +109,22 @@ ready(function() {
 
         window.KAMBA = window.KAMBA || {};
 
-        window.kamba = function kamba(initial_config, secondary_config) {
-
-            function ready(fn) {
-                if (document.readyState != 'loading') {
-                    fn();
-                } else {
-                    document.addEventListener('DOMContentLoaded', fn);
-                }
-            }
+        window.kamba = (body, config) => {
+            let ready = (fn) => {
+                (document.readyState !== 'loading') ? fn(): getComponents(document, 'DOMContentLoaded', fn);
+            };
 
             ready(function() {
                 //Send - Post request
-
-                let url;
-                let token = 'Token ';
-
-                if (secondary_config.environment == 'sandbox') {
-                    url = "https://sandbox.usekamba.com/v1/checkouts/";
-                } else {
-                    url = "https://api.usekamba.com/v1/checkouts/";
-                }
+                let url = (config.environment == 'sandbox') ? "https://sandbox.usekamba.com/v1/checkouts/" : "https://api.usekamba.com/v1/checkouts/";
 
                 fetch(url, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'authorization': token.concat(secondary_config.api_key)
+                            'authorization': 'Token ' + config.api_key
                         },
-                        body: JSON.stringify({
-                            channel: initial_config.channel,
-                            currency: initial_config.currency,
-                            initial_amount: initial_config.initial_amount,
-                            notes: initial_config.notes,
-                            redirect_url_success: initial_config.redirect_url_success,
-                            payment_method: initial_config.payment_method
-                        })
+                        body: JSON.stringify(body)
 
                     }).then(function(response) {
                         if (response.ok) {
@@ -463,13 +443,12 @@ ready(function() {
 
                         } else {
 
-                            response.json().then(data => {
+                            response.json().then(() => {
 
                                 templateModalErrorPayKamba();
-
-                                var textErrorKamba = document.querySelector(".textErrorKamba");
-                                textErrorKamba.innerHTML = "Falha!... Verifique suas configurações de pagamento ou entra em contacto com a equipe da Kamba";
-
+                                setComponentAttributes('.textErrorKamba', undefined, undefined, {
+                                    'innerHTML': "Falha!... Verifique suas configurações de pagamento ou entra em contacto com a equipe da Kamba"
+                                });
                             });
 
                         }
@@ -579,7 +558,7 @@ ready(function() {
                         }
                     }
 
-                    var x = window.matchMedia("(min-width: 1025PX)")
+                    var x = window.matchMedia("(min-width: 1025PX)");
                     midiaLargeDivice(x);
                     x.addListener(midiaLargeDivice);
                 }
