@@ -1,11 +1,3 @@
-function ready(fn) {
-    if (document.readyState != 'loading') {
-        fn();
-    } else {
-        document.addEventListener('DOMContentLoaded', fn);
-    }
-}
-
 let setComponentAttributes = (e, p, f, a, callback) => {
 
     var cl = (typeof e === 'object') ? e : document.querySelector(e);
@@ -70,6 +62,11 @@ let kambaObjectCreator = (object, callback) => {
     return el;
 };
 
+let ready = (fn) => {
+    (document.readyState !== 'loading') ? fn(): getComponents(document, 'DOMContentLoaded', fn);
+};
+
+
 ready(function() {
     kambaObjectCreator('img', (img) => {
         setComponentAttributes(img, 'setAttribute', undefined, {
@@ -110,10 +107,6 @@ ready(function() {
         window.KAMBA = window.KAMBA || {};
 
         window.kamba = (body, config) => {
-            let ready = (fn) => {
-                (document.readyState !== 'loading') ? fn(): getComponents(document, 'DOMContentLoaded', fn);
-            };
-
             ready(function() {
                 //Send - Post request
                 let url = (config.environment == 'sandbox') ? "https://sandbox.usekamba.com/v1/checkouts/" : "https://api.usekamba.com/v1/checkouts/";
@@ -124,7 +117,7 @@ ready(function() {
                             'Content-Type': 'application/json',
                             'authorization': 'Token ' + config.api_key
                         },
-                        body: JSON.stringify(body)
+                        body: body //instanceof object always or it will return an error
 
                     }).then(function(response) {
                         if (response.ok) {
@@ -221,7 +214,7 @@ ready(function() {
                                 </div>
                             </footer>
                         </section>
-                    </div>`
+                    </div>`;
                                 kambaModalContainer.innerHTML = kambaWidget;
 
                                 //Style Widget Modal
@@ -563,7 +556,7 @@ ready(function() {
                     x.addListener(midiaLargeDivice);
                 }
 
-            })
-        }
+            });
+        };
     })();
 })();
