@@ -102,7 +102,7 @@ ready(function() {
 
 (function() {
     (function bootstrap() {
-        'use strict'
+        'use strict';
 
         window.KAMBA = window.KAMBA || {};
 
@@ -123,9 +123,9 @@ ready(function() {
                         if (response.ok) {
 
                             response.json().then(data => {
-
-                                var initial_amount = new Number(data.initial_amount);
-                                var total_amount = new Number(data.total_amount);
+                                // i suggest the change because all the currence by default use decimal place and it's represented by float
+                                var inicialAmount = new Number(data.inicialAmount);
+                                var totalAmount = new Number(data.totalAmount);
 
                                 var dateConvert = new Date(data.created_at);
                                 var newDateConvert = [dateConvert.getDate(), dateConvert.getMonth(), dateConvert.getFullYear()].join('/') + ' às ' + [dateConvert.getHours(), dateConvert.getMinutes(), dateConvert.getSeconds()].join(':');
@@ -183,11 +183,11 @@ ready(function() {
                                     <div class="payDetail">
                                         <ul class="listProprietyProduct">
                                             <li class="nameProduct"><b> ${data.notes} </b></li>
-                                            <li class="priceProduct"><b>${initial_amount.toLocaleString('pt-ao', {style: 'currency', currency: initial_config.currency})} </b></li>
+                                            <li class="priceProduct"><b>${inicialAmount.toLocaleString('pt-ao', {style: 'currency', currency: config.currency})} </b></li>
                                         </ul>
                                         <ul class="listTotal">
                                             <li class="descriptionTotal"><b>TOTAL</b></li>
-                                            <li class="priceTotal"><b>${total_amount.toLocaleString('pt-ao', {style: 'currency', currency: initial_config.currency})} </b></li>
+                                            <li class="priceTotal"><b>${totalAmount.toLocaleString('pt-ao', {style: 'currency', currency: config.currency})} </b></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -446,7 +446,7 @@ ready(function() {
 
                         }
                     })
-                    .catch(function(error) {
+                    .catch(() => {
 
                         templateModalErrorPayKamba();
 
@@ -527,35 +527,31 @@ ready(function() {
                     });
 
 
-                    //MEDIUM
-                    function midiaMediumDivice(x) {
-                        if (x.matches) {
-                            setComponentAttributes(kambaModalWidget, 'style', 'setProperty', {
-                                'width': '40%',
-                                'height': '50%'
+                    let checkMedia = () => {
+                        let opt = {};
+                        // check whether the browser support the function or not
+                        if ('matchMedia' in windows) {
+                            let lSize = window.matchMedia("(min-width: 641px)");
+                            let hSize = window.matchMedia("(min-width: 1025px)");
+                            if (lSize.matches) {
+                                opt.height = '40%';
+                                opt.width = '50%';
+                                opt.obj = kambaModalWidget;
+                            } else if (hSize.matches) {
+                                opt.height = '25%';
+                                opt.width = '30%';
+                                opt.obj = kambaWidget;
+                            }
+                            setComponentAttributes(opt.obj, 'style', 'setProperty', opt, (e) => {
+                                setComponentAttributes(e, 'addEventListener', undefined, {
+                                    0: checkMedia
+                                });
                             });
                         }
-                    }
 
-                    var x = window.matchMedia("(min-width: 641px)")
-                    midiaMediumDivice(x)
-                    x.addListener(midiaMediumDivice)
-
-                    //LARGE
-                    function midiaLargeDivice(x) {
-                        if (x.matches) {
-                            setComponentAttributes(kambaWidget, 'style', 'setProperty', {
-                                'width': '25%',
-                                'height': '30%'
-                            });
-                        }
-                    }
-
-                    var x = window.matchMedia("(min-width: 1025PX)");
-                    midiaLargeDivice(x);
-                    x.addListener(midiaLargeDivice);
+                    };
+                    checkMedia();
                 }
-
             });
         };
     })();
